@@ -19,8 +19,9 @@ const int CREATE_PMODE = S_IREAD | S_IWRITE;
 #define O_BINARY (0)
 const int CREATE_PMODE = S_IRWXU | S_IRWXG | S_IRWXO;
 #endif
+#include "CCLogSystem.h"
 
-int g_openfiles = 0;
+//int g_openfiles = 0;
 FileAutoClose::FileAutoClose(const std::string &path, int flags)
 {
 	m_FP = ::open(path.c_str(), flags, CREATE_PMODE);
@@ -32,32 +33,16 @@ FileAutoClose::FileAutoClose(const std::string &path, int flags)
 			err = err;
 		}
 	}
-	else
-	{
-		g_openfiles++;
-		if(g_openfiles > 8)
-		{
-			int aaa = 0;
-		}
-	}
 }
 FileAutoClose::FileAutoClose(const char *path, int flags)
 {
 	m_FP = open(path, flags, CREATE_PMODE);
-	if(m_FP < 0)
+	if (m_FP < 0)
 	{
 		int err = errno;
-		if(err != 2)
+		if (err != 2)
 		{
 			err = err;
-		}
-	}
-	else
-	{
-		g_openfiles++;
-		if(g_openfiles > 8)
-		{
-			int aaa = 0;
 		}
 	}
 }
@@ -92,8 +77,6 @@ void FileAutoClose::close()
 	{
 		::close(m_FP);
 		m_FP = -1;
-
-		g_openfiles--;
 	}
 }
 
@@ -150,10 +133,52 @@ bool FileAutoClose::seek(int offset, int pos)
 	}
 }
 
-FileManager *g_fileManager = FileManager::GetInstance();
+FileManager *g_fileManager = NULL;
 FileManager::FileManager(void)
 {
-	m_sRootPath = "E:/Workspace/HelloMyCpp/bin/";
+	this->initRootPath(NULL);
+}
+
+const char* FileManager::getFullPath(const char *filePath)
+{
+	m_fullPath.clear();
+	for (size_t i = 0; i < m_rootPaths.size(); i++)
+	{
+		std::string fullPath = m_rootPaths[i] + filePath;
+		if (isFileExists(fullPath.c_str()))
+		{
+			m_fullPath = fullPath;
+			break;
+		}
+	}
+	
+	if (m_fullPath.empty()) 
+		m_fullPath = m_rootPaths[0] + filePath;
+	
+	return m_fullPath.c_str();
+}
+
+bool FileManager::isFileExists(const char *filepath)
+{
+	struct  stat buffer;
+	return (stat(filepath, &buffer) == 0);
+}
+
+bool FileManager::initRootPath(const char *rootpath)
+{
+	if (rootpath != NULL)
+		m_rootPaths.push_back(rootpath);
+
+	std::string filePath = __FILE__;
+	size_t findPos = filePath.find("client");
+	std::string _rootPath = filePath.substr(0, findPos);
+
+	//root write file path
+	m_rootPaths.push_back(_rootPath);
+	m_rootPaths.push_back(_rootPath + "bin/");
+	m_rootPaths.push_back(_rootPath + "bin/res/");
+
+	return true;
 }
 
 bool FileManager::renameFile(const char *oldname, const char *newname)
@@ -165,15 +190,17 @@ bool FileManager::renameFile(const char *oldname, const char *newname)
 #ifdef _WIN32
 		DeleteFileA(newname);
 		if(rename(oldname, newname) == 0) return true;
-#endif
+		::Sleep(100);
+#else
 		::sleep(100);
+#endif
 	}
 	return false;
 }
 
 void* FileManager::ReadWholeFile(const char *path, int &datalen)
 {
-	std::string fullpath(m_sRootPath+path);
+	std::string fullpath = getFullPath(path);
 
 	FileAutoClose fp(fullpath, O_RDONLY|O_BINARY);
 	if (fp.isNull()) return NULL;
@@ -198,8 +225,8 @@ bool FileManager::WriteWholeFile(const char *path, const void *data, int datalen
 	if(safely)
 	{
 		char tmppath[256];
-		sprintf(tmppath, "%s.tmp", path);
-		std::string fullpath(m_sRootPath+path);
+		sprintf_s(tmppath, "%s.tmp", path);
+		std::string fullpath = getFullPath(path);
 
 		FileAutoClose fp(fullpath, O_CREAT|O_WRONLY|O_TRUNC|O_BINARY);
 		if(fp.isNull()) return false;

@@ -23,53 +23,103 @@ function string.split(str, mark)
 	return tsub
 end
 
-local function __tostrx(param)
-	local result = tostring(param)
-	if type(param) == 'table' then
-		local pAttr = string.sub(result, -8)
-		result = ('table: 0x%s'):format(pAttr)
-	elseif type(param) == 'function' then
-		local pAttr = string.sub(result, -8)
-		result = ('function: 0x%s'):format(pAttr)
+function table.size(table)
+	local size = 0
+	for k in pairs(table) do
+		size = size + 1
 	end
-	return result
+	return size
 end
 
-local function __th_tostring(tbl)
+-------------table.tostring-------------
+local function __tbl_tostring(tbl)
+	local function sub_tostr(param)
+		local result = tostring(param)
+		if type(param) == 'table' then
+			local pAttr = string.sub(result, -8)
+			result = ('table: 0x%s'):format(pAttr)
+		elseif type(param) == 'function' then
+			local pAttr = string.sub(result, -8)
+			result = ('function: 0x%s'):format(pAttr)
+		end
+		return result
+	end
+
+	local function get_key(key, level)
+		if type(key) == "number" then
+			key = ('  '):rep(level).. ('[%d]'):format(key)
+        elseif type(key) == "string" then
+			key = ('  '):rep(level).. ('[%q]'):format(key)
+        else
+			key = ('  '):rep(level).. ('[%s]'):format(sub_tostr(key))
+		end
+		return key
+	end
+
+	local function get_value(value)
+		if type(value) == "number" then
+			value = ('%d'):format(value)
+        elseif type(value) == "string" then
+            value = ('%q'):format(value)
+        else
+			value = ("%s"):format(sub_tostr(value))
+		end
+		return value
+	end
+
 	local ref_cache = {} -- 记录已存在的
-    local function getTable(ptbl, level)
-    	local str_tbl = __tostrx(ptbl)
+    local function get_table(ptbl, level)
+    	local str_tbl = sub_tostr(ptbl)
         local str_format = ('{ --%s\n'):format(str_tbl)
+
 		local index = 0
+		local tbl_str = str_format
 		local size = table.size(ptbl)
 		ref_cache[ptbl] = true
         for key, value in pairs(ptbl) do
 			index = index + 1
-			key = getKey(key, level)
+			key = get_key(key, level)
             if type(value) == "table" then
 				if ref_cache[value] then
-					tabstr = tabstr .. key .. (' : ref%q'):format(tostrx(value))
+					tbl_str = tbl_str .. key .. (' : ref%q'):format(sub_tostr(value))
 				else
-					tabstr = tabstr .. key .. ' : ' .. getTable(value, level+1)
+					tbl_str = tbl_str .. key .. ' : ' .. get_table(value, level+1)
 				end
             else
-				tabstr = tabstr .. key .. " : " .. getValue(value)
+				tbl_str = tbl_str .. key .. " : " .. get_value(value)
             end
-            tabstr = tabstr .. (index==size and "\n" or ",\n")
+            tbl_str = tbl_str .. (index==size and "\n" or ",\n")
         end
-        tabstr = tabstr .. ('  '):rep(level-1) .. "}"
-        return tabstr
+        tbl_str = tbl_str .. ('  '):rep(level-1) .. "}"
+        return tbl_str
     end
+    return get_table(tbl, 1)
 end
+table.tostring =  __tbl_tostring
+--print(__tbl_tostring({1, 2, 3}))
 
-function tostrx(param)
-	local result = tostring(param)
-	if type(param) == 'table' then
-		local pAttr = string.sub(result, -8)
-		result = ('table: 0x%s'):format(pAttr)
-	elseif type(param) == 'function' then
-		local pAttr = string.sub(result, -8)
-		result = ('function: 0x%s'):format(pAttr)
-	end
-	return result
+_G.print = function( ... )
+	local msg = ''
+	local info = debug.getinfo(2)
+    if info ~= nil then 
+    	local file = info.short_src or ''
+    	local line = info.currentline or 0
+    	msg = string.format('[%s:%d]', file, line)
+    end
+
+    local args = {...}
+    for i, v in ipairs(args) do
+    	if type(v) == 'table' then
+    		local ss = table.tostring(v)
+    		if #ss > 5000 then ss = string.sub(ss, 1, 5000) end
+    		msg = msg .. ss .. ' '
+    	else
+    		local ss = tostring(v)
+    		if #ss > 5000 then ss = string.sub(ss, 1, 5000) end
+    		msg = msg .. ss .. ' '
+    	end
+    end
+    if #msg >= 8*1024 then ss = string.sub(ss, 1, 8*1024) end
+    if #args <= 0 then m = 'nil' end
+    proxy_log( msg )
 end

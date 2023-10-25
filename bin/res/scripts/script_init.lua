@@ -4,5 +4,6 @@ require("res.scripts.person")
 
 local xman = ClassList.Male.new()
 local fman = ClassList.Female.new()
+print(xman)
 print(xman.super)
 print(fman.super)

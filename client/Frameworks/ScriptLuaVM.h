@@ -22,6 +22,8 @@ public:
 
 	lua_State* getLuaState() { return m_pState; }
 
+	bool setLuaLogfunc(const char* funcname, lua_CFunction logfunc);
+
 	static void showLuaError(lua_State* L, const char* msg);
 
 private:
@@ -31,5 +33,7 @@ private:
 //------------require自定义loader_Lua------------
 extern int myLuaLoader(lua_State * m_state);
 extern void addLuaLoader(lua_State* L, lua_CFunction func);
+
+extern int proxy_log(lua_State *L); // lua端的打印接口
 
 #endif //__SCRIPT_LUA_VM_H__

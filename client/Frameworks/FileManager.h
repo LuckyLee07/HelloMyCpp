@@ -2,6 +2,8 @@
 #define __FILE_MANANGER_H__
 
 #include <string>
+#include <vector>
+
 #include "Singleton.h"
 
 // 文件操作管理
@@ -33,15 +35,18 @@ public:
 	FileManager(void);
 	~FileManager() { }
 	
-	const char* getRootPath() { return m_sRootPath.c_str(); }
+	const char* getFullPath(const char *filePath);
+	bool isFileExists(const char *filepath);
 
+	bool initRootPath(const char *rootpath = NULL);
 	bool renameFile(const char *oldname, const char *newname);
-
+	
 	void* ReadWholeFile(const char *path, int &datalen);
 	bool WriteWholeFile(const char *path, const void *data, int datalen, bool safely=false);
 
 private:
-	std::string m_sRootPath;
+	std::string m_fullPath;
+	std::vector<std::string> m_rootPaths;
 };
 extern FileManager *g_fileManager;
 

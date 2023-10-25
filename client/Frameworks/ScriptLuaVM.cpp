@@ -7,9 +7,8 @@ extern "C" {
 }
 #include <assert.h>
 #include <iostream>
-#include <string.h>
 #include "FileManager.h"
-
+#include "CCLogSystem.h"
 
 static const char* lua_readfile(lua_State* L, void* data, size_t* size)
 {
@@ -35,7 +34,10 @@ ScriptLuaVM::ScriptLuaVM()
 
 	luaL_openlibs(m_pState);
 
+	// 添加require loader
 	addLuaLoader(m_pState, myLuaLoader);
+	// 设置lua打印接口
+	setLuaLogfunc("proxy_log", proxy_log);
 }
 
 ScriptLuaVM::~ScriptLuaVM()
@@ -45,12 +47,11 @@ ScriptLuaVM::~ScriptLuaVM()
 
 bool ScriptLuaVM::callFile(const char *fpath)
 {
-	std::string rootpath = g_fileManager->getRootPath();
-	const char* fullpath = std::string(rootpath + fpath).c_str();
+	std::string fullPath = g_fileManager->getFullPath(fpath);
 
-	FILE* pfile = fopen(fullpath, "rb");
+	FILE* pfile = fopen(fullPath.c_str(), "rb");
 	assert(pfile != NULL);
-	if (lua_load(m_pState, (lua_Reader)lua_readfile, pfile, fullpath) != LUA_OK)
+	if (lua_load(m_pState, (lua_Reader)lua_readfile, pfile, fullPath.c_str()) != LUA_OK)
 	{
 		const char *perr = lua_tostring(m_pState, -1);
 		fprintf(stderr, "load failed: %s | error: %s\n", fpath, perr);
@@ -84,6 +85,14 @@ bool ScriptLuaVM::callString(const char *szLua_code)
 		//showLuaError(m_pState, perr);
 		return false;
 	}
+	return true;
+}
+
+bool ScriptLuaVM::setLuaLogfunc(const char* funcname, lua_CFunction logfunc)
+{
+	if (m_pState != NULL)
+		lua_register(m_pState, funcname, logfunc);
+
 	return true;
 }
 
@@ -126,14 +135,13 @@ int myLuaLoader(lua_State * m_state)
 	}
 
 	filename += LuaExt; //重新补上Lua后缀
-	std::string rootpath = g_fileManager->getRootPath();
-	const char* fullpath = std::string(rootpath + filename).c_str();
+	std::string fullPath = g_fileManager->getFullPath(filename.c_str());
 
-	FILE* pfile = fopen(fullpath, "rb");
+	FILE* pfile = fopen(fullPath.c_str(), "rb");
 	if (pfile != NULL)
 	{
 		//if (luaL_loadfile(m_state, fullpath) != LUA_OK)
-		if (lua_load(m_state, (lua_Reader)lua_readfile, pfile, fullpath) != LUA_OK)
+		if (lua_load(m_state, (lua_Reader)lua_readfile, pfile, fullPath.c_str()) != LUA_OK)
 		{
 			const char *perr = lua_tostring(m_state, -1);
 			fprintf(stderr, "require lua %s error: %s\n", filename.c_str(), perr);
@@ -171,4 +179,15 @@ void addLuaLoader(lua_State* m_state, lua_CFunction func)
 	// setloaders into package
 	lua_setfield(m_state, -2, "loaders"); /* L: package */
 	lua_pop(m_state, 1);
+}
+
+// Lua端的打印接口
+int proxy_log(lua_State *L)
+{
+	const char* msg = luaL_checkstring(L, 1);
+	if (msg == NULL) return 0;
+
+	CCLOG_INFO("@lua: %s\n", msg);
+
+	return 0;
 }
