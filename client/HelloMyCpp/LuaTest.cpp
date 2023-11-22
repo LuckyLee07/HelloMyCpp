@@ -230,9 +230,9 @@ namespace Fancy
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		pScriptVM->callFile("res/scripts/script_init.lua");
 
-		const char* fpath = "res/scripts/hello.lua";
-		const char* fpath1 = "res/scripts/hello1.lua";
-		const char* fpath2 = "res/scripts/main.lua";
+		const char* fpath = "bin/res/scripts/hello.lua";
+		const char* fpath1 = "bin/res/scripts/hello1.lua";
+		const char* fpath2 = "bin/res/scripts/main.lua";
 
 		//pScriptVM->callFile(fpath);
 		//pScriptVM->callFile(fpath1);
