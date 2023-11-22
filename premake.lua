@@ -5,26 +5,20 @@ work_dir = "build"
 workspace "HelloMyCpp" -- 解决方案
 	location( work_dir )
     startproject( "Lesson0_HelloLua" )
-    configurations
-    {
-        "Debug",
-        "Release"
-    }
-
-    platforms
-    {
-        "Win32",
-        "Win64"
-    }
+    configurations { "Debug", "Release" }
 
     filter "platforms:Win32"
         system "Windows"
         architecture "x32"
-
+    filter{}
     filter "platforms:Win64"
         system "Windows"
         architecture "x86_64"
-
+    filter{}
+    filter "platforms:Mac"
+        system "macosx"
+        architecture "arm64"
+    filter{}
 
 proj_dir = work_dir .. "/%{prj.name}"
 bin_dir = proj_dir .. "/bin/%{cfg.buildcfg}"
@@ -42,7 +36,7 @@ function CreateProject(projname, projtype, linkers)
         for index, linker in pairs(linkers) do
             links ( linker.libn )
             libdirs  ( linker.libdirs )
-            includedirs( linker.includes )
+            sysincludedirs( linker.includes )
         end
 
         files
@@ -50,10 +44,14 @@ function CreateProject(projname, projtype, linkers)
             "client/%{prj.name}/**.h",  -- 当前文件夹所有.h文件
             "client/%{prj.name}/**.cpp" -- 当前文件夹所有.cpp文件
         }
+
+        -- Platform-specific settings
+        filter "system:macosx"
+            -- macOS specific settings
+            -- You can add macOS specific include directories, defines, etc. here
         
-        postbuildcommands {
-            ("{COPY} %{cfg.buildtarget.relpath} \"../../bin/\"")
-        }
+        filter "system:windows"
+            postbuildcommands { "{COPY} %{cfg.buildtarget.relpath} \"../../bin/\"" }
 end
 
 function Create3rdLibs(libsname, projtype, srcfiles, linkers)
@@ -67,16 +65,19 @@ function Create3rdLibs(libsname, projtype, srcfiles, linkers)
 
         files( srcfiles )
         
-        postbuildcommands {
-            ("{COPY} %{cfg.buildtarget.relpath} \"../../bin/\"")
-        }
-        
+        filter "system:macosx"
+            targetextension ".a"
+        filter{}
+        filter "system:windows"
+            postbuildcommands { "{COPY} %{cfg.buildtarget.relpath} \"../../bin/\"" }
+        filter{}
+
         if not linkers then return end
 
         for index, linker in pairs(linkers) do
             links ( linker.libn )
             libdirs  ( linker.libdirs )
-            includedirs( linker.includes )
+            sysincludedirs( linker.includes )
         end
 end
 
@@ -85,12 +86,12 @@ local Linkers =
 {
     {
         libdirs = "bin",
-        libn = "libLua.lib", 
+        libn = "libLua", 
         includes = "client/external/lua/lua",
     },
     {
         libdirs = "bin",
-        libn = "Frameworks.lib", 
+        libn = "libFrameworks", 
         includes = "client/Frameworks",
     },
 }

@@ -225,7 +225,7 @@ bool FileManager::WriteWholeFile(const char *path, const void *data, int datalen
 	if(safely)
 	{
 		char tmppath[256];
-		sprintf_s(tmppath, "%s.tmp", path);
+		sprintf(tmppath, "%s.tmp", path);
 		std::string fullpath = getFullPath(path);
 
 		FileAutoClose fp(fullpath, O_CREAT|O_WRONLY|O_TRUNC|O_BINARY);
