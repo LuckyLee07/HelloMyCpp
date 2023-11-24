@@ -30,10 +30,10 @@ private:
 	lua_State *m_pState;
 };
 
-//------------require自定义loader_Lua------------
+//------------require鑷畾涔塴oader_Lua------------
 extern int myLuaLoader(lua_State * m_state);
 extern void addLuaLoader(lua_State* L, lua_CFunction func);
 
-extern int proxy_log(lua_State *L); // lua端的打印接口
+extern int proxy_log(lua_State *L); // lua绔殑鎵撳嵃鎺ュ彛
 
 #endif //__SCRIPT_LUA_VM_H__

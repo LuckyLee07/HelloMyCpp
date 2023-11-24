@@ -25,7 +25,7 @@ namespace Fancy
 }
 
 #define __FILENAME__ __FILE__
-// Ïà¹ØµÄ¼¸¸öÈÕÖ¾´òÓ¡½Ó¿Ú
+// ç›¸å…³çš„å‡ ä¸ªæ—¥å¿—æ‰“å°æ¥å£
 #define	CCLOG_INFO		Fancy::CCLogSetParam(__FILENAME__, __FUNCTION__, __LINE__, Fancy::LOGL_INFO),	Fancy::CCLogMessage
 #define	CCLOG_DEBUG		Fancy::CCLogSetParam(__FILENAME__, __FUNCTION__, __LINE__, Fancy::LOGL_DEBUG),	Fancy::CCLogMessage
 

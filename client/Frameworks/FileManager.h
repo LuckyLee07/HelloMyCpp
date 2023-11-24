@@ -6,7 +6,7 @@
 
 #include "Singleton.h"
 
-// 文件操作管理
+// 鏂囦欢鎿嶄綔绠＄悊
 
 class FileAutoClose
 {

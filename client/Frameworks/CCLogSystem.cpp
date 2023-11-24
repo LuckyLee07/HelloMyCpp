@@ -51,12 +51,12 @@ namespace Fancy
 		
 		const char* fullpath = filename;
 #ifdef _WIN32
-		const char* newfname = strrchr(fullpath, '\\');// Windows_·´Ğ±¸Ü 
-		if (newfname != NULL) s_pFileName = newfname + 1;//È¥µôĞ±¸Ü
+		const char* newfname = strrchr(fullpath, '\\');// Windows_åæ–œæ  
+		if (newfname != NULL) s_pFileName = newfname + 1;//å»æ‰æ–œæ 
 #endif
 		/*
 		static const char* brefix = "client";
-		static int bresize = strlen(brefix)+1;//È¥µôĞ±¸Ü
+		static int bresize = strlen(brefix)+1;//å»æ‰æ–œæ 
 
 		const char* newfname = strstr(fullpath, brefix);
 		if (newfname != NULL) s_pFileName = newfname + bresize;

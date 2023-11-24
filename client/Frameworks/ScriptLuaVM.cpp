@@ -16,7 +16,7 @@ static const char* lua_readfile(lua_State* L, void* data, size_t* size)
 
 	if (!feof(pfile))
 	{
-		static char buffer[1024]; //»º³åÇø´óĞ¡
+		static char buffer[1024]; //ç¼“å†²åŒºå¤§å°
 		size_t bytesRead = fread(buffer, 1, sizeof(buffer), pfile);
 		if (bytesRead > 0)
 		{
@@ -34,9 +34,9 @@ ScriptLuaVM::ScriptLuaVM()
 
 	luaL_openlibs(m_pState);
 
-	// Ìí¼Órequire loader
+	// æ·»åŠ require loader
 	addLuaLoader(m_pState, myLuaLoader);
-	// ÉèÖÃlua´òÓ¡½Ó¿Ú
+	// è®¾ç½®luaæ‰“å°æ¥å£
 	setLuaLogfunc("proxy_log", proxy_log);
 }
 
@@ -98,7 +98,7 @@ bool ScriptLuaVM::setLuaLogfunc(const char* funcname, lua_CFunction logfunc)
 
 void ScriptLuaVM::showLuaError(lua_State* L, const char* msg)
 {
-	//send_LuaErrMsg(msg); //ÉÏ´«lua±¨´íĞÅÏ¢
+	//send_LuaErrMsg(msg); //ä¸Šä¼ luaæŠ¥é”™ä¿¡æ¯
 	
 	const char* luaTrack = lua_get_traceback(L);
 	if (!luaTrack) return;
@@ -108,18 +108,18 @@ void ScriptLuaVM::showLuaError(lua_State* L, const char* msg)
 	errStr.append("\nluaTraceBack:\n");
 	errStr.append(luaTrack);
 	
-	//µ¯³ölua±¨´íµ¯´°
+	//å¼¹å‡ºluaæŠ¥é”™å¼¹çª—
 	//pop_MessageBox(errStr.c_str(), title);
 }
 
 
-//------------require×Ô¶¨Òåloader_Lua------------
+//------------requireè‡ªå®šä¹‰loader_Lua------------
 int myLuaLoader(lua_State * m_state)
 {
 	const std::string LuaExt = ".lua";
 	const char* luapath = lua_tostring(m_state, 1);
 
-	//¼æÈİ"socket.core"£¬ÕâÖÖĞ´·¨
+	//å…¼å®¹"socket.core"ï¼Œè¿™ç§å†™æ³•
 	std::string filename = luapath;
 	size_t pos = filename.rfind(LuaExt);
 	if (pos != std::string::npos && pos == (filename.length() - LuaExt.length()))
@@ -134,7 +134,7 @@ int myLuaLoader(lua_State * m_state)
 		pos = filename.find_first_of('.');
 	}
 
-	filename += LuaExt; //ÖØĞÂ²¹ÉÏLuaºó×º
+	filename += LuaExt; //é‡æ–°è¡¥ä¸ŠLuaåç¼€
 	std::string fullPath = g_fileManager->getFullPath(filename.c_str());
 
 	FILE* pfile = fopen(fullPath.c_str(), "rb");
@@ -156,19 +156,19 @@ int myLuaLoader(lua_State * m_state)
 	return 1;
 }
 
-//²Î¿¼£ºhttps://blog.csdn.net/Yueya_Shanhua/article/details/52241544
+//å‚è€ƒï¼šhttps://blog.csdn.net/Yueya_Shanhua/article/details/52241544
 void addLuaLoader(lua_State* m_state, lua_CFunction func)
 {
 	if (func == NULL) return;
 	
 	// stackcontent after the invoking of the function
-	// getloader table£¨»ñµÃluaÔ¤¼ÓÔØºÃµÄpackageÕâ¸ötable£¬²¢½«Õâ¸ötableÑ¹—C£©
+	// getloader tableï¼ˆè·å¾—luaé¢„åŠ è½½å¥½çš„packageè¿™ä¸ªtableï¼Œå¹¶å°†è¿™ä¸ªtableå‹æ¡Ÿï¼‰
 	lua_getglobal(m_state, "package"); /* L: package */
-	// »ñµÃpackageÕâ¸ötableÀïÃæµÄloadersÔªËØ£¬²¢½«ÆäÑ¹—C£¬Õâ¸öloadersÒ²ÊÇÒ»¸ötable£¬tableÀïµÄÔªËØÈ«ÊÇ·½·¨
+	// è·å¾—packageè¿™ä¸ªtableé‡Œé¢çš„loaderså…ƒç´ ï¼Œå¹¶å°†å…¶å‹æ¡Ÿï¼Œè¿™ä¸ªloadersä¹Ÿæ˜¯ä¸€ä¸ªtableï¼Œtableé‡Œçš„å…ƒç´ å…¨æ˜¯æ–¹æ³•
 	lua_getfield(m_state, -1, "loaders"); /* L: package, loaders */
-	// insertloader into index 2£¨½«×Ô¼ºµÄloader·½·¨Ñ¹—C£©
+	// insertloader into index 2ï¼ˆå°†è‡ªå·±çš„loaderæ–¹æ³•å‹æ¡Ÿï¼‰
 	lua_pushcfunction(m_state, func); /* L: package, loaders, func */
-	// ±éÀúloadersÕâ¸ötable£¬½«ÆäÏÂ±êÎª2µÄÔªËØÌæ»»Îª×Ô¼ºµÄloader·½·¨
+	// éå†loadersè¿™ä¸ªtableï¼Œå°†å…¶ä¸‹æ ‡ä¸º2çš„å…ƒç´ æ›¿æ¢ä¸ºè‡ªå·±çš„loaderæ–¹æ³•
 	for (int i = lua_objlen(m_state, -2) + 1; i > 2; --i)
 	{
 		lua_rawgeti(m_state, -2, i - 1); /* L: package, loaders, func, function */
@@ -181,7 +181,7 @@ void addLuaLoader(lua_State* m_state, lua_CFunction func)
 	lua_pop(m_state, 1);
 }
 
-// Lua¶ËµÄ´òÓ¡½Ó¿Ú
+// Luaç«¯çš„æ‰“å°æ¥å£
 int proxy_log(lua_State *L)
 {
 	const char* msg = luaL_checkstring(L, 1);

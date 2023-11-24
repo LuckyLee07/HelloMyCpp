@@ -16,9 +16,9 @@ extern int calcComplex(lua_State *L)
 
 	std::complex<double> c(r, i);
 	
-	//´æÈë¾ø¶ÔÖµ
+	//å­˜å…¥ç»å¯¹å€¼
 	lua_pushnumber(L, std::abs(c));
-	//´æÈë½Ç¶È
+	//å­˜å…¥è§’åº¦
 	lua_pushnumber(L, std::arg(c)*180.0 / PI);
 
 	return 2;

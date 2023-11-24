@@ -2,21 +2,21 @@
 
 namespace Fancy
 {	
-	// 1¡¢¼òµ¥ÔËĞĞLua´úÂë
-	extern void lua_test0(); //²âÊÔcallString
+	// 1ã€ç®€å•è¿è¡ŒLuaä»£ç 
+	extern void lua_test0(); //æµ‹è¯•callString
 
-	// 2¡¢ÓëLua½»»»Êı¾İ
-	extern void lua_test1(); //²âÊÔlua_pushstring
+	// 2ã€ä¸Luaäº¤æ¢æ•°æ®
+	extern void lua_test1(); //æµ‹è¯•lua_pushstring
 
-	extern void lua_test2(); //²âÊÔlua_settable
+	extern void lua_test2(); //æµ‹è¯•lua_settable
 
-	extern void lua_test3(); //²âÊÔlua_setfield
+	extern void lua_test3(); //æµ‹è¯•lua_setfield
 
-	// 3¡¢ÔÚC++ÖĞµ÷ÓÃLua×Óº¯Êı
-	extern void lua_test4(); //²âÊÔlua_setfield
+	// 3ã€åœ¨C++ä¸­è°ƒç”¨Luaå­å‡½æ•°
+	extern void lua_test4(); //æµ‹è¯•lua_setfield
 
-	// 4¡¢ÔÚLuaÖĞµ÷ÓÃC++º¯Êı
-	extern void lua_test5(); //²âÊÔlua_pushcfunction
+	// 4ã€åœ¨Luaä¸­è°ƒç”¨C++å‡½æ•°
+	extern void lua_test5(); //æµ‹è¯•lua_pushcfunction
 
 	extern void lua_test6();
 }

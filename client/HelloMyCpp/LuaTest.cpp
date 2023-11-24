@@ -53,8 +53,8 @@ namespace Fancy
 
 	void lua_test2()
 	{
-		char *szLua_code = "x = {} --ÓÃÓÚ´æ·Å½á¹ûµÄtable\n"
-			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]ÀïÊÇ½á¹û£¬x[2]ÀïÊÇÌæ»»´ÎÊı\n"
+		char *szLua_code = "x = {} --ç”¨äºå­˜æ”¾ç»“æœçš„table\n"
+			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]é‡Œæ˜¯ç»“æœï¼Œx[2]é‡Œæ˜¯æ›¿æ¢æ¬¡æ•°\n"
 			"x.u = string.upper(x[1])";
 
 		char *szMode = "(%w+)%s*=%s*(%w+)";
@@ -68,20 +68,20 @@ namespace Fancy
 		lua_pushstring(L, "Mode");	//key
 		lua_pushstring(L, szMode);	//value
 
-		//ÉèÖÃnewtable[Mode]=szMode
-		//ÓÉÓÚÉÏÃæÁ½´ÎÑ¹Õ»£¬ÏÖÔÚtableÔªËØÅÅÔÚÕ»¶¥ÍùÏÂÊıµÚÈıµÄÎ»ÖÃ
-		//lua_settable»á×Ô¼ºµ¯³öÉÏÃæÑ¹ÈëµÄkeyºÍvalue
+		//è®¾ç½®newtable[Mode]=szMode
+		//ç”±äºä¸Šé¢ä¸¤æ¬¡å‹æ ˆï¼Œç°åœ¨tableå…ƒç´ æ’åœ¨æ ˆé¡¶å¾€ä¸‹æ•°ç¬¬ä¸‰çš„ä½ç½®
+		//lua_settableä¼šè‡ªå·±å¼¹å‡ºä¸Šé¢å‹å…¥çš„keyå’Œvalue
 		lua_settable(L, -3);
 
 		lua_pushstring(L, "Tag");	//key
 		lua_pushstring(L, szTag);	//value
-		lua_settable(L, -3);//ÉèÖÃnewtable[Tag]=szTag
+		lua_settable(L, -3);//è®¾ç½®newtable[Tag]=szTag
 
 		lua_pushstring(L, "Str");	//key
 		lua_pushstring(L, szStr);	//value
-		lua_settable(L, -3);//ÉèÖÃnewtable[Str]=szStr
+		lua_settable(L, -3);//è®¾ç½®newtable[Str]=szStr
 
-		lua_setglobal(L, "c");//½«Õ»¶¥ÔªËØÖÃÎªLuaÖĞµÄÈ«¾Ö±äÁ¿c
+		lua_setglobal(L, "c");//å°†æ ˆé¡¶å…ƒç´ ç½®ä¸ºLuaä¸­çš„å…¨å±€å˜é‡c
 
 		if (pScriptVM->callString(szLua_code))
 		{
@@ -94,7 +94,7 @@ namespace Fancy
 				std::cout << "x.u = " << lua_tostring(L, -1) << std::endl;
 				lua_pop(L, 1);
 
-				//È¡µÃx[1]ºÍx[2]
+				//å–å¾—x[1]å’Œx[2]
 				for (int index = 1; index <= 2; index++)
 				{
 					lua_pushnumber(L, index);
@@ -104,15 +104,15 @@ namespace Fancy
 					lua_pop(L, 1);
 				}
 			}
-			lua_pop(L, 1);//µ¯³öÕ»¶¥µÄx
+			lua_pop(L, 1);//å¼¹å‡ºæ ˆé¡¶çš„x
 		}
 		delete pScriptVM;
 	}
 
 	void lua_test3()
 	{
-		char *szLua_code = "x = {} --ÓÃÓÚ´æ·Å½á¹ûµÄtable\n"
-			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]ÀïÊÇ½á¹û£¬x[2]ÀïÊÇÌæ»»´ÎÊı\n"
+		char *szLua_code = "x = {} --ç”¨äºå­˜æ”¾ç»“æœçš„table\n"
+			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]é‡Œæ˜¯ç»“æœï¼Œx[2]é‡Œæ˜¯æ›¿æ¢æ¬¡æ•°\n"
 			"x.u = string.upper(x[1])";
 
 		char *szMode = "(%w+)%s*=%s*(%w+)";
@@ -123,7 +123,7 @@ namespace Fancy
 		lua_State *L = pScriptVM->getLuaState();
 		lua_newtable(L);
 
-		//newtable[Tag]=szTagÉèÖÃ
+		//newtable[Tag]=szTagè®¾ç½®
 		lua_pushstring(L, szMode);
 		lua_setfield(L, -2, "Mode");
 
@@ -133,26 +133,26 @@ namespace Fancy
 		lua_pushstring(L, szStr);
 		lua_setfield(L, -2, "Str");
 
-		lua_setglobal(L, "c");//½«Õ»¶¥ÔªËØÖÃÎªLuaÖĞµÄÈ«¾Ö±äÁ¿c
+		lua_setglobal(L, "c");//å°†æ ˆé¡¶å…ƒç´ ç½®ä¸ºLuaä¸­çš„å…¨å±€å˜é‡c
 
 		if (pScriptVM->callString(szLua_code))
 		{
 			lua_getglobal(L, "x");
 			if (lua_istable(L, -1))
 			{
-				lua_getfield(L, -1, "u"); // x.uÈ¡ÖµÓëÉÏÀıµÄ²îÒì
+				lua_getfield(L, -1, "u"); // x.uå–å€¼ä¸ä¸Šä¾‹çš„å·®å¼‚
 				std::cout << "x.u = " << lua_tostring(L, -1) << std::endl;
 				lua_pop(L, 1);
 
-				//È¡µÃx[1]ºÍx[2]
+				//å–å¾—x[1]å’Œx[2]
 				for (int index = 1; index <= 2; index++)
 				{
-					lua_rawgeti(L, -1, index);// x[i]È¡ÖµÓëÉÏÀıµÄ²îÒì
+					lua_rawgeti(L, -1, index);// x[i]å–å€¼ä¸ä¸Šä¾‹çš„å·®å¼‚
 					std::cout << "x[" << index << "] = " << lua_tostring(L, -1) << std::endl;
 					lua_pop(L, 1);
 				}
 			}
-			lua_pop(L, 1);//µ¯³öÕ»¶¥µÄx
+			lua_pop(L, 1);//å¼¹å‡ºæ ˆé¡¶çš„x
 		}
 		delete pScriptVM;
 	}
@@ -175,18 +175,18 @@ namespace Fancy
 
 		if (pScriptVM->callString(szLua_code))
 		{
-			//LuaÖ´ĞĞºóÈ¡µÃÈ«¾Ö±äÁ¿µÄÖµ
+			//Luaæ‰§è¡Œåå–å¾—å…¨å±€å˜é‡çš„å€¼
 			lua_getglobal(L, "gsub");
 
-			if (lua_isfunction(L, -1)) //È·ÈÏÏÂÊÇ¸öº¯Êı
+			if (lua_isfunction(L, -1)) //ç¡®è®¤ä¸‹æ˜¯ä¸ªå‡½æ•°
 			{
-				//ÒÀ´Î·ÅÈëÈı¸ö²ÎÊı
+				//ä¾æ¬¡æ”¾å…¥ä¸‰ä¸ªå‚æ•°
 				lua_pushstring(L, szStr);
 				lua_pushstring(L, szMode);
 				lua_pushstring(L, szTag);
 
-				//µ÷ÓÃ, ÎÒÃÇÓĞ3¸ö²ÎÊı£¬µ«ÎÒÃÇ¿ÉÒÔÖ»Ğè2¸ö
-				//Èç¹û errfunc ÊÇ 0 £¬·µ»ØÔÚÕ»¶¥µÄ´íÎóĞÅÏ¢¾ÍºÍÔ­Ê¼´íÎóĞÅÏ¢ÍêÈ«Ò»ÖÂ
+				//è°ƒç”¨, æˆ‘ä»¬æœ‰3ä¸ªå‚æ•°ï¼Œä½†æˆ‘ä»¬å¯ä»¥åªéœ€2ä¸ª
+				//å¦‚æœ errfunc æ˜¯ 0 ï¼Œè¿”å›åœ¨æ ˆé¡¶çš„é”™è¯¯ä¿¡æ¯å°±å’ŒåŸå§‹é”™è¯¯ä¿¡æ¯å®Œå…¨ä¸€è‡´
 				if (lua_pcall(L, 3, 2, 0) != LUA_OK)
 				{
 					const char *perr = lua_tostring(L, -1);
@@ -195,7 +195,7 @@ namespace Fancy
 				}
 				else
 				{
-					// µ÷ÓÃÕıÈ·£¬µÃµ½Á½¸ö½á¹û ×¢ÒâÔÚÕ»ÀïµÄË³Ğò
+					// è°ƒç”¨æ­£ç¡®ï¼Œå¾—åˆ°ä¸¤ä¸ªç»“æœ æ³¨æ„åœ¨æ ˆé‡Œçš„é¡ºåº
 					std::cout << "a = " << lua_tostring(L, -2) << std::endl;
 					std::cout << "b = " << lua_tostring(L, -1) << std::endl;
 					lua_pop(L, 2);
@@ -216,10 +216,10 @@ namespace Fancy
 
 		//lua_pushcfunction(L, calcComplex);
 		//lua_setglobal(L, "CalcComplex");
-		// ÒÔÉÏ´úÂë¿É¼òĞ´ÈçÏÂ
+		// ä»¥ä¸Šä»£ç å¯ç®€å†™å¦‚ä¸‹
 		lua_register(L, "CalcComplex", calcComplex);
 
-		// Ö´ĞĞlua´úÂë
+		// æ‰§è¡Œluaä»£ç 
 		pScriptVM->callString(szLua_code);
 		
 		delete pScriptVM;
