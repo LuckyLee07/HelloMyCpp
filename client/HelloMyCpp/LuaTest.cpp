@@ -19,13 +19,13 @@ namespace Fancy
 
 	void lua_test1()
 	{
-		char *szLua_code =
+		const char *szLua_code =
 			"r = string.gsub(c_Str, c_Mode, c_Tag)\n"
 			"u = string.upper(r)";
 
-		char *szMode = "(%w+)%s*=%s*(%w+)";
-		char *szStr = "key1 = value1 key2 = value2";
-		char *szTag = "<%1>%2</%1>";
+        const char *szMode = "(%w+)%s*=%s*(%w+)";
+        const char *szStr = "key1 = value1 key2 = value2";
+        const char *szTag = "<%1>%2</%1>";
 
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		lua_State *L = pScriptVM->getLuaState();
@@ -53,13 +53,13 @@ namespace Fancy
 
 	void lua_test2()
 	{
-		char *szLua_code = "x = {} --用于存放结果的table\n"
+        const char *szLua_code = "x = {} --用于存放结果的table\n"
 			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]里是结果，x[2]里是替换次数\n"
 			"x.u = string.upper(x[1])";
 
-		char *szMode = "(%w+)%s*=%s*(%w+)";
-		char *szStr = "key1 = value1 key2 = value2";
-		char *szTag = "<%1>%2</%1>";
+        const char *szMode = "(%w+)%s*=%s*(%w+)";
+        const char *szStr = "key1 = value1 key2 = value2";
+        const char *szTag = "<%1>%2</%1>";
 
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		lua_State *L = pScriptVM->getLuaState();
@@ -111,13 +111,13 @@ namespace Fancy
 
 	void lua_test3()
 	{
-		char *szLua_code = "x = {} --用于存放结果的table\n"
+        const char *szLua_code = "x = {} --用于存放结果的table\n"
 			"x[1], x[2] = string.gsub(c.Str, c.Mode, c.Tag) --x[1]里是结果，x[2]里是替换次数\n"
 			"x.u = string.upper(x[1])";
 
-		char *szMode = "(%w+)%s*=%s*(%w+)";
-		char *szStr = "key1 = value1 key2 = value2";
-		char *szTag = "<%1>%2</%1>";
+        const char *szMode = "(%w+)%s*=%s*(%w+)";
+        const char *szStr = "key1 = value1 key2 = value2";
+        const char *szTag = "<%1>%2</%1>";
 
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		lua_State *L = pScriptVM->getLuaState();
@@ -159,16 +159,16 @@ namespace Fancy
 
 	void lua_test4()
 	{
-		char *szLua_code = 
+        const char *szLua_code =
 			"function gsub(Str, Mode, Tag)\n"
 			"	a, b = string.gsub(Str, Mode, Tag)\n"
 			"	c = string.upper(a)\n"
 			"	return a, b, c\n"
 			"end";
 
-		char *szMode = "(%w+)%s*=%s*(%w+)";
-		char *szStr = "key1 = value1 key2 = value2";
-		char *szTag = "<%1>%2</%1>";
+        const char *szMode = "(%w+)%s*=%s*(%w+)";
+        const char *szStr = "key1 = value1 key2 = value2";
+        const char *szTag = "<%1>%2</%1>";
 		
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		lua_State *L = pScriptVM->getLuaState();
@@ -207,7 +207,7 @@ namespace Fancy
 
 	void lua_test5()
 	{
-		char *szLua_code =
+        const char *szLua_code =
 			"v, a = CalcComplex(3, 4)\n"
 			"print('Fxkk===>>', v, a)";
 
@@ -234,9 +234,9 @@ namespace Fancy
 		const char* fpath1 = "bin/res/scripts/hello1.lua";
 		const char* fpath2 = "bin/res/scripts/main.lua";
 
-		//pScriptVM->callFile(fpath);
-		//pScriptVM->callFile(fpath1);
-		//pScriptVM->callFile(fpath2);
+		pScriptVM->callFile(fpath);
+		pScriptVM->callFile(fpath1);
+		pScriptVM->callFile(fpath2);
 	}
 
 }
