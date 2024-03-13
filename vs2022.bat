@@ -23,4 +23,4 @@ tools\premake\premake5 --os=windows --file=premake.lua vs2022 %ARGUMENTS%
 
 cd /d %CURRENT_DIRECTORY%
 
-pause
+rem pause

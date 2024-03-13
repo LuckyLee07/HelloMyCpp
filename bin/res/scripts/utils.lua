@@ -121,5 +121,5 @@ _G.print = function( ... )
     end
     if #msg >= 8*1024 then ss = string.sub(ss, 1, 8*1024) end
     if #args <= 0 then m = 'nil' end
-    proxy_log( msg )
+    LuaInterface:log( msg )
 end

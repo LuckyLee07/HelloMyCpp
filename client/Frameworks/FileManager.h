@@ -48,6 +48,7 @@ private:
 	std::string m_fullPath;
 	std::vector<std::string> m_rootPaths;
 };
-extern FileManager *g_fileManager;
+
+FileManager* GetFileManager();
 
 #endif //__FILE_MANANGER_H__

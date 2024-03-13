@@ -7,8 +7,28 @@ extern "C" {
 }
 #include <assert.h>
 #include <iostream>
+#include "tolua++.h"
 #include "FileManager.h"
 #include "CCLogSystem.h"
+
+// LuaStack自动清理
+class LuaStackBackup
+{
+public:
+	LuaStackBackup(lua_State* vpls) : ls(vpls)
+	{
+		top = lua_gettop(vpls);
+	}
+
+	~LuaStackBackup()
+	{
+		lua_settop(ls, top);
+	}
+
+private:
+	lua_State* ls;
+	int	top;
+};
 
 static const char* lua_readfile(lua_State* L, void* data, size_t* size)
 {
@@ -36,8 +56,9 @@ ScriptLuaVM::ScriptLuaVM()
 
 	// 添加require loader
 	addLuaLoader(m_pState, myLuaLoader);
+
 	// 设置lua打印接口
-	setLuaLogfunc("proxy_log", proxy_log);
+	//setLuaLogfunc("proxy_log", proxy_log);
 }
 
 ScriptLuaVM::~ScriptLuaVM()
@@ -47,14 +68,16 @@ ScriptLuaVM::~ScriptLuaVM()
 
 bool ScriptLuaVM::callFile(const char *fpath)
 {
-	std::string fullPath = g_fileManager->getFullPath(fpath);
+	LuaStackBackup stackbackup(m_pState);
+
+	std::string fullPath = GetFileManager()->getFullPath(fpath);
 
 	FILE* pfile = fopen(fullPath.c_str(), "rb");
 	assert(pfile != NULL);
 	if (lua_load(m_pState, (lua_Reader)lua_readfile, pfile, fullPath.c_str()) != LUA_OK)
 	{
 		const char *perr = lua_tostring(m_pState, -1);
-		fprintf(stderr, "load failed: %s | error: %s\n", fpath, perr);
+		CCLUA_ERROR("call_file error: %s | error: %s", fpath, perr);
 		lua_pop(m_pState, 1);
 		//showLuaError(m_pState, perr);
 		return false;
@@ -63,7 +86,7 @@ bool ScriptLuaVM::callFile(const char *fpath)
 	if (lua_pcall(m_pState, 0, 0, 0) != LUA_OK)
 	{
 		const char *perr = lua_tostring(m_pState, -1);
-		fprintf(stderr, "call failed: %s | error: %s\n", fpath, perr);
+		CCLUA_ERROR("lua_pcall error: %s | error: %s", fpath, perr);
 		lua_pop(m_pState, 1);
 		//showLuaError(m_pState, perr);
 		return false;
@@ -75,17 +98,160 @@ bool ScriptLuaVM::callFile(const char *fpath)
 bool ScriptLuaVM::callString(const char *szLua_code)
 {
 	if (szLua_code == nullptr) return false;
+
+	LuaStackBackup stackbackup(m_pState);
 	
 	int result = luaL_dostring(m_pState, szLua_code);
 	if (result != LUA_OK)
 	{	
 		const char *perr = lua_tostring(m_pState, -1);
-		fprintf(stderr, "[script error] %s \n", perr);
+		CCLUA_ERROR("call_string error: %s-%s", perr, szLua_code);
 		lua_pop(m_pState, 1);
 		//showLuaError(m_pState, perr);
 		return false;
 	}
 	return true;
+}
+
+bool ScriptLuaVM::callFunction(const char* funcname, const char* format, ...)
+{
+	if (!m_pState || !funcname || !funcname[0])
+	{
+		return false;
+	}
+	LuaStackBackup stackbackup(m_pState);
+
+	lua_getglobal(m_pState, funcname);
+	if (!lua_isfunction(m_pState, -1))
+	{
+		CCLUA_ERROR("call_func error: %s is not a function", funcname);
+		return false;
+	}
+
+	va_list vl;
+	va_start(vl, format);
+
+	const char *sig = format;
+	if (format == NULL) sig = "";
+	int narg = 0;
+	while (*sig)
+	{
+		switch (*sig)
+		{
+		case 'd': /* double	argument */
+			lua_pushnumber(m_pState, va_arg(vl, double));
+			break;
+		case 'f':	//用float有问题,改成double自测没问题
+			lua_pushnumber(m_pState, va_arg(vl, double));
+			break;
+		case 'i': /* int argument */
+			lua_pushnumber(m_pState, va_arg(vl, int));
+			break;
+		case 's':
+		{
+			lua_pushstring(m_pState, va_arg(vl, char *));
+		}
+		break;
+		case 'S':
+		{
+			char *s = va_arg(vl, char *);
+			int len = va_arg(vl, int);
+			lua_pushlstring(m_pState, s, len);
+		}
+		break;
+		case 'w': // long long to number
+			lua_pushnumber(m_pState, (lua_Number)va_arg(vl, long long));
+			break;
+		case 'b': /* boolean argument */
+			//lua_pushboolean(m_pState, va_arg(vl, bool)); 安卓下会崩溃
+			lua_pushboolean(m_pState, va_arg(vl, int));
+			break;
+		case 'u': /* user data */
+		{
+			if (sig[1] == '[')
+			{
+				char classname[256];
+				sig++;
+				const char *pend = strchr(sig, ']');
+				assert(pend != NULL);
+				size_t len = pend - sig - 1;
+				memcpy(classname, sig + 1, len);
+				classname[len] = 0;
+
+				tolua_pushusertype(m_pState, va_arg(vl, void *), classname);
+				sig = pend;
+			}
+			else
+			{
+				tolua_pushuserdata(m_pState, va_arg(vl, void *));
+			}
+		}
+		break;
+		case '>':
+			sig++;
+			goto endwhile;
+		default:
+			assert(0);
+			return false;
+		}
+		sig++;
+		narg++;
+		luaL_checkstack(m_pState, 1, "too many arguments");
+	}
+
+endwhile:
+	int nres = (int)strlen(sig);	/* number of expected results */
+	if (lua_pcall(m_pState, narg, nres, 0) != 0) /* do	the	call */
+	{
+		CCLUA_ERROR("lua_pcall error: %s-%s === %s", funcname, sig, lua_tostring(m_pState, -1));
+		return false;
+	}
+
+	/* retrieve	results	*/
+	nres = -nres; /* stack index of	first result */
+	while (*sig)
+	{
+		switch (*sig++)
+		{
+		case 'd': /* double	result */
+			assert(lua_isnumber(m_pState, nres));
+			*va_arg(vl, double *) = lua_tonumber(m_pState, nres);
+			break;
+		case 'f':
+			assert(lua_isnumber(m_pState, nres));
+			*va_arg(vl, float*) = (float)lua_tonumber(m_pState, nres);
+			break;
+		case 'i': /* int result	*/
+			assert(lua_isnumber(m_pState, nres));
+			*va_arg(vl, int	*) = (int)lua_tonumber(m_pState, nres);
+			break;
+		case 's':
+			assert(lua_isstring(m_pState, nres));
+			strcpy(va_arg(vl, char *), lua_tostring(m_pState, nres));
+			break;
+		case 'b': /* boolean argument */
+			assert(lua_isboolean(m_pState, nres));
+			*va_arg(vl, bool *) = (0 != lua_toboolean(m_pState, nres));
+			break;
+		case 'u': /* light user data */
+			assert(lua_isuserdata(m_pState, nres));
+			*va_arg(vl, void **) = tolua_tousertype(m_pState, nres, NULL);
+			break;
+		default:
+			assert(0);
+			break;
+		}
+		nres++;
+	}
+	va_end(vl);
+	return true;
+}
+
+void ScriptLuaVM::setUserTypePointer(const char* name, const char* clsname, void* ptr)
+{
+	LuaStackBackup stackbackup(m_pState);
+	tolua_pushusertype(m_pState, ptr, clsname);
+	lua_setglobal(m_pState, name);
 }
 
 bool ScriptLuaVM::setLuaLogfunc(const char* funcname, lua_CFunction logfunc)
@@ -135,7 +301,7 @@ int myLuaLoader(lua_State * m_state)
 	}
 
 	filename += LuaExt; //重新补上Lua后缀
-	std::string fullPath = g_fileManager->getFullPath(filename.c_str());
+	std::string fullPath = GetFileManager()->getFullPath(filename.c_str());
 
 	FILE* pfile = fopen(fullPath.c_str(), "rb");
 	if (pfile != NULL)
@@ -144,13 +310,13 @@ int myLuaLoader(lua_State * m_state)
 		if (lua_load(m_state, (lua_Reader)lua_readfile, pfile, fullPath.c_str()) != LUA_OK)
 		{
 			const char *perr = lua_tostring(m_state, -1);
-			fprintf(stderr, "require lua %s error: %s\n", filename.c_str(), perr);
+			CCLOG_ERROR("require lua %s error: %s", filename.c_str(), perr);
 			lua_pop(m_state, 1);
 		}
 	}
 	else
 	{
-		fprintf(stderr, "requrie not find [%s]\n", filename.c_str());
+		CCLOG_ERROR("requrie not find [%s]", filename.c_str());
 	}
 	
 	return 1;
@@ -169,7 +335,7 @@ void addLuaLoader(lua_State* m_state, lua_CFunction func)
 	// insertloader into index 2（将自己的loader方法压桟）
 	lua_pushcfunction(m_state, func); /* L: package, loaders, func */
 	// 遍历loaders这个table，将其下标为2的元素替换为自己的loader方法
-	for (int i = lua_objlen(m_state, -2) + 1; i > 2; --i)
+	for (int i = (int)lua_objlen(m_state, -2) + 1; i > 2; --i)
 	{
 		lua_rawgeti(m_state, -2, i - 1); /* L: package, loaders, func, function */
 		//we call lua_rawgeti, so the loader table now is at -3
@@ -181,13 +347,14 @@ void addLuaLoader(lua_State* m_state, lua_CFunction func)
 	lua_pop(m_state, 1);
 }
 
+/*
 // Lua端的打印接口
 int proxy_log(lua_State *L)
 {
 	const char* msg = luaL_checkstring(L, 1);
 	if (msg == NULL) return 0;
 
-	CCLOG_INFO("@lua: %s\n", msg);
+	//CCLUA_INFO("@lua:%s\n", msg);
 
 	return 0;
-}
+}*/

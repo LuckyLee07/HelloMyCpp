@@ -5,13 +5,32 @@ extern "C" {
 #include <lualib.h>
 #include <lauxlib.h>
 }
+
+#include <complex>
 #include <iostream>
 #include "ScriptLuaVM.h"
 #include "FileManager.h"
-#include "CppForLua.h"
+#include "CCLogSystem.h"
 
 namespace Fancy
 {
+	extern const double PI = 3.14159;
+
+	extern int calcComplex(lua_State* L)
+	{
+		double r = luaL_checknumber(L, 1);
+		double i = luaL_checknumber(L, 2);
+
+		std::complex<double> c(r, i);
+
+		//存入绝对值
+		lua_pushnumber(L, std::abs(c));
+		//存入角度
+		lua_pushnumber(L, std::arg(c) * 180.0 / PI);
+
+		return 2;
+	}
+
 	void lua_test0()
 	{
 		ScriptLuaVM::GetInstance()->callString("print('Hello, Lua!')\npr()");
@@ -230,13 +249,15 @@ namespace Fancy
 		ScriptLuaVM *pScriptVM = ScriptLuaVM::GetInstance();
 		pScriptVM->callFile("res/scripts/script_init.lua");
 
-		const char* fpath = "bin/res/scripts/hello.lua";
-		const char* fpath1 = "bin/res/scripts/hello1.lua";
-		const char* fpath2 = "bin/res/scripts/main.lua";
+		pScriptVM->callString("sayhello('Hello', 11, 99)");
 
-		pScriptVM->callFile(fpath);
-		pScriptVM->callFile(fpath1);
-		pScriptVM->callFile(fpath2);
+		int result = 0;
+		pScriptVM->callFunction("sayhello", "sis>i", "HelloWorld", 11, "hh", &result);
+		pScriptVM->callFunction("sayhello", "sii>i", "HelloWorld", 11, 99, &result);
+		CCLOG_INFO("Fxkk======>>> %d", result);
+		CCLOG_INFO("Fxkk======>>> %d", 77);
+		CCLOG_INFO("Fxkk======>>> %d", 88);
+		CCLOG_INFO("Fxkk======>>> %d", 99);
 	}
 
 }

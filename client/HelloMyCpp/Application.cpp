@@ -1,10 +1,15 @@
 #include "Application.h"
-#include "CCLogSystem.h"
 #include "LuaTest.h"
 #include "CCLogSystem.h"
 #include "FileManager.h"
+#include "ScriptLuaVM.h"
+#include "LuaInterface.h"
+
+#include "tolua++.h"
 
 using namespace Fancy;
+
+extern int tolua_open_all(lua_State* tolua_S);
 
 Application::Application()
 {
@@ -18,14 +23,20 @@ Application::~Application()
 
 void Application::Initialize()
 {
-	g_fileManager = FileManager::GetInstance();
-
+	// 开启打印系统 
 	if (CCLogSysInit() == 0)
 	{
-		LogAddConsoleHandler(LOGL_DEBUG | LOGL_INFO);
-		std::string fullpath = g_fileManager->getFullPath("bin/game.log");
-		LogAddFileHandler(fullpath.c_str(), LOGL_DEBUG | LOGL_INFO);
+		LogAddConsoleHandler(LOGL_DEBUG | LOGL_INFO | LOGL_ERROR);
+		std::string fullpath = GetFileManager()->getFullPath("bin/game.log");
+		LogAddFileHandler(fullpath.c_str(), LOGL_DEBUG | LOGL_INFO | LOGL_ERROR);
 	}
+	
+	// 设置ToLua对象 
+	ScriptLuaVM* pScriptVM = ScriptLuaVM::GetInstance();
+	tolua_open_all(pScriptVM->getLuaState());
+
+	// 设置lua可用的c++对象 
+	pScriptVM->setUserTypePointer("LuaInterface", "LuaInterface", LuaInterface::GetInstance());
 }
 
 void Application::Run()
@@ -34,14 +45,8 @@ void Application::Run()
 	//Fancy::lua_test1();
 	//Fancy::lua_test2();
 	//Fancy::lua_test3();
+	//Fancy::lua_test4();
+	//Fancy::lua_test5();
 
-	Fancy::lua_test4();
-	Fancy::lua_test5();
 	Fancy::lua_test6();
-	/*
-	for (int index = 0; index < 99999; index++)
-	{
-		CCLOG_INFO("Fxkk=======>>> %d", index);
-	}
-	*/
 }

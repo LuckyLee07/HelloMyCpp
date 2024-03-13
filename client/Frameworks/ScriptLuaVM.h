@@ -20,6 +20,10 @@ public:
 
 	bool callString(const char *szLua_code);
 
+	bool callFunction(const char* funcname, const char* format, ...);
+
+	void setUserTypePointer(const char* name, const char* clsname, void* ptr);
+
 	lua_State* getLuaState() { return m_pState; }
 
 	bool setLuaLogfunc(const char* funcname, lua_CFunction logfunc);
@@ -34,6 +38,6 @@ private:
 extern int myLuaLoader(lua_State * m_state);
 extern void addLuaLoader(lua_State* L, lua_CFunction func);
 
-extern int proxy_log(lua_State *L); // lua端的打印接口
+//extern int proxy_log(lua_State *L); // lua端的打印接口
 
 #endif //__SCRIPT_LUA_VM_H__

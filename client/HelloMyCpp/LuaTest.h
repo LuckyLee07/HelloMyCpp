@@ -1,7 +1,8 @@
-#pragma once
+#ifndef __LUA_TEST_H__
+#define __LUA_TEST_H__
 
 namespace Fancy
-{	
+{
 	// 1、简单运行Lua代码
 	extern void lua_test0(); //测试callString
 
@@ -20,3 +21,5 @@ namespace Fancy
 
 	extern void lua_test6();
 }
+
+#endif //__LUA_TEST_H__
