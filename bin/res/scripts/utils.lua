@@ -98,13 +98,16 @@ end
 table.tostring =  __tbl_tostring
 --print(__tbl_tostring({1, 2, 3}))
 
+local __print__ = _G.print
 _G.print = function( ... )
 	local msg = ''
 	local info = debug.getinfo(2)
     if info ~= nil then 
-    	local file = info.short_src or ''
+    	local file = info.source or ''
     	local line = info.currentline or 0
-    	msg = string.format('[%s:%d]', file, line)
+    	local newf = string.gsub(file, ModuleFilePath, '')
+    	msg = string.format('[%s:%d]', newf, line)
+    	--__print__("Fxkk=========>>>", ModuleFilePath, file)
     end
 
     local args = {...}
@@ -121,5 +124,9 @@ _G.print = function( ... )
     end
     if #msg >= 8*1024 then ss = string.sub(ss, 1, 8*1024) end
     if #args <= 0 then m = 'nil' end
+    --_print(msg)
     LuaInterface:log( msg )
 end
+
+local moduleFileName = LuaInterface:getModuleFileName()
+_G.ModuleFilePath = string.gsub(moduleFileName, '[\\/]%w+%.exe', '')

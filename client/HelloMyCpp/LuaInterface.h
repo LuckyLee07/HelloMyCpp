@@ -1,6 +1,7 @@
 #ifndef __LUA_INTERFACE_H__  
 #define __LUA_INTERFACE_H__
 
+#include <string>
 #include "Singleton.h"
 
 class LuaInterface : //tolua_exports
@@ -14,10 +15,11 @@ public:
 	//tolua_begin
 	void log(const char* msg);
 	
+	const char* getModuleFileName();
 	//tolua_end
 
 private:
-
+	std::string m_moduleFileName;
 }; //tolua_exports
 
 #endif;

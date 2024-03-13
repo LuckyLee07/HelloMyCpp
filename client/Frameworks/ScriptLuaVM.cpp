@@ -203,7 +203,7 @@ endwhile:
 	int nres = (int)strlen(sig);	/* number of expected results */
 	if (lua_pcall(m_pState, narg, nres, 0) != 0) /* do	the	call */
 	{
-		CCLUA_ERROR("lua_pcall error: %s-%s === %s", funcname, sig, lua_tostring(m_pState, -1));
+		CCLUA_ERROR("call_func error: %s === %s", funcname, lua_tostring(m_pState, -1));
 		return false;
 	}
 

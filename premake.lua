@@ -19,8 +19,8 @@ workspace "HelloMyCpp" -- 解决方案
         architecture "x86_64"
 
 
+targe_dir = "./bin/"
 proj_dir = work_dir .. "/%{prj.name}"
-bin_dir = proj_dir .. "/bin/%{cfg.buildcfg}"
 obj_dir = proj_dir .. "/obj/%{cfg.buildcfg}"
 
 
@@ -31,7 +31,7 @@ function CreateProject(projname, projtype, srcfiles, linkers)
         kind( projtype )
 
         objdir (  obj_dir )
-        targetdir ( bin_dir )
+        targetdir ( targe_dir )
 
         files( srcfiles )
         
@@ -39,35 +39,28 @@ function CreateProject(projname, projtype, srcfiles, linkers)
 
         if linkers ~= nil then
             for index, linker in pairs(linkers) do
+                libdirs  ( targe_dir )
                 links ( linker.lib_name )
-                libdirs  ( linker.lib_dst )
                 includedirs( linker.lib_include )
             end
         end
-
-        postbuildcommands {
-            --("{COPY} %{cfg.buildtarget.relpath} \"../../../libs/\"")
-        }
 end
 
 -- 现有第三方库
 local Linkers = { }
 Linkers['lib_lua'] = 
 {
-    lib_dst = "libs",
-    lib_name = "liblua.lib", 
+    lib_name = "liblua", 
     lib_include = "client/external/lua/lua",
 }
 Linkers['lib_tolua'] = 
 {
-    lib_dst = "libs",
-    lib_name = "libtolua.lib", 
+    lib_name = "libtolua", 
     lib_include = "client/external/lua/tolua",
 }
 Linkers['lib_self'] = 
 {
-    lib_dst = "libs",
-    lib_name = "frameworks.lib", 
+    lib_name = "frameworks", 
     lib_include = "client/Frameworks",
 }
 --------------External--------------
