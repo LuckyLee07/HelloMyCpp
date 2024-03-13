@@ -46,7 +46,7 @@ function CreateProject(projname, projtype, srcfiles, linkers)
         end
 
         postbuildcommands {
-            --("{COPY} %{cfg.buildtarget.relpath} \"../../bin/\"")
+            --("{COPY} %{cfg.buildtarget.relpath} \"../../../libs/\"")
         }
 end
 
@@ -54,19 +54,19 @@ end
 local Linkers = { }
 Linkers['lib_lua'] = 
 {
-    lib_dst = "./bin",
+    lib_dst = "libs",
     lib_name = "liblua.lib", 
     lib_include = "client/external/lua/lua",
 }
 Linkers['lib_tolua'] = 
 {
-    lib_dst = "./bin",
+    lib_dst = "libs",
     lib_name = "libtolua.lib", 
-    lib_include = "client/external/lua/lua",
+    lib_include = "client/external/lua/tolua",
 }
 Linkers['lib_self'] = 
 {
-    lib_dst = "./bin",
+    lib_dst = "libs",
     lib_name = "frameworks.lib", 
     lib_include = "client/Frameworks",
 }
@@ -89,7 +89,7 @@ group "" -- 结束group文件夹组 --
 CreateProject("frameworks", "StaticLib", {
     "client/%{prj.name}/**.h",
     "client/%{prj.name}/**.cpp"
-}, { Linkers.lib_lua })
+}, { Linkers.lib_lua, Linkers.lib_tolua })
 
 CreateProject("tolua++", "ConsoleApp", {
     "client/external/lua/tolua/**.h",
